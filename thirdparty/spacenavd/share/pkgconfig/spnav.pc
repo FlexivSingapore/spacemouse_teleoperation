@@ -1,0 +1,7 @@
+PREFIX=/home/zfquek/Desktop/programs/libspnav-1.0/install
+Name: libspnav
+Description: Library to access 6-DoF input devices managed by spacenavd or the proprietary 3dxsrv driver.
+URL: http://spacenav.sourceforge.net
+Version: 1.0
+Cflags: -I${PREFIX}/include
+Libs: -L${PREFIX}/lib -lspnav

@@ -1,2 +1,22 @@
-# spacemouse_teleoperation
-Teleoperation of Flexiv Rizon robot using spacemouse
+# Sixx-AGT Flexiv Robotic Ulrasound System
+
+
+## Build and install depenencies
+1. Please install flexiv_rdk via https://github.com/flexivrobotics/flexiv_rdk. Follow the README.md in flexiv_rdk to install the flexiv rdk library. Please checkout version v0.10 of the flexiv_rdk.
+
+
+2. In the current repository, create a build folder
+   
+        mkdir build && cd build
+
+3. Configure cmake via
+
+        cmake .. -DCMAKE_INSTALL_PREFIX=~/rdk_install
+
+4. Build the application
+
+        make -j 3
+
+5. Run the application
+
+        ./flexiv_teleoperation_app

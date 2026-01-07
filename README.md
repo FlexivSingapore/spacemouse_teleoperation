@@ -1,4 +1,4 @@
-# Sixx-AGT Flexiv Robotic Ulrasound System
+# Teleoperation of Flexiv Robots using Spacemouse
 
 
 ## Build and install depenencies

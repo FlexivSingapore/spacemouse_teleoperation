@@ -33,6 +33,12 @@ namespace teleoperation {
 enum StateMachine
 {
   SM_DISCONNECT,
+  SM_IDLE, ///< Idle mode, waiting for command
+
+  SM_TELEOP_INIT,
+  SM_TELEOP_PREPROCESS,
+  SM_TELEOP,
+  SM_TELEOP_EXIT,
 };
 
 class MainWindow : public QMainWindow
@@ -44,38 +50,43 @@ public:
   ~MainWindow();
 
 private slots:
+  void update();
 
 private:
   // User interface
-  Ui::MainWindow* m_ui;
+  Ui::MainWindow* ui_;
 
   // Timer for periodic update
-  QTimer m_timer;
-
-  // Timer for state machine
-  QTimer m_stateTimer;
+  QTimer timer_;
 
   // ================== Haptic device ========================
   // Handler for haptic devices
-  HapticDeviceHandler m_deviceHandler;
+  HapticDeviceHandler device_handler_;
 
   // Shared pointer to haptic device interface managed by m_deviceHandle
-  GenericHapticDevicePtr m_device;
+  GenericHapticDevicePtr device_;
 
   // Haptic device specs
-  HapticDeviceInfo m_deviceInfo;
+  HapticDeviceInfo device_info_;
 
   // Number of haptic device
-  unsigned int m_deviceCount = 0;
+  unsigned int device_count_ = 0;
 
   // Haptic device pose
-  Pose m_devicePose;
+  Pose device_pose_;
 
   // Haptic device velocity
-  Vec6d m_deviceVel = Vec6d::Zero();
+  Vec6d device_velocity_ = Vec6d::Zero();
 
   // Haptic device linear velocity after filter
-  Vec6d m_deviceVelFilt = Vec6d::Zero();
+  Vec6d device_velocity_filtered_ = Vec6d::Zero();
+
+  // ========================= Teleoperation =======================
+  // State machine for robot
+  StateMachine state_machine_ = SM_DISCONNECT;
+
+  // Thread for teleoperation
+  std::unique_ptr<std::thread> thread_teleoperation_;
 
   void initUI();
 };

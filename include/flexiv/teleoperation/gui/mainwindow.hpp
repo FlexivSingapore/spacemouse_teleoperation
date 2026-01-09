@@ -14,7 +14,7 @@
 #include <spdlog/spdlog.h>
 
 #include <flexiv/tdk/data.hpp>
-#include <flexiv/tdk/transparent_cartesian_teleop_lan.hpp>
+#include <flexiv/tdk/device_teleop_lan.hpp>
 
 #include "flexiv/teleoperation/data_types.hpp"
 #include <flexiv/teleoperation/devices/HapticDeviceHandler.hpp>
@@ -35,10 +35,22 @@ enum StateMachine
   SM_DISCONNECT,
   SM_IDLE, ///< Idle mode, waiting for command
 
+  SM_FREEDRIVE_INIT,
+  SM_FREEDRIVE_CALISENSOR,     ///< Run force sensor calibration
+  SM_FREEDRIVE_WAITCALISENSOR, ///< Wait for force sensor calibration to finish
+  SM_FREEDRIVE,
+  SM_FREEDRIVE_EXIT, ///< Exiting freedrive
+
   SM_TELEOP_INIT,
+  SM_TELEOP_CALIFORCESENSOR,
+  SM_TELEOP_WAITCALISENSOR,
   SM_TELEOP_PREPROCESS,
   SM_TELEOP,
   SM_TELEOP_EXIT,
+
+  SM_MOVEPOSE_INIT,
+  SM_MOVEPOSE_RUNPLAN_WAITFORFINISH,
+  SM_MOVEPOSE_EXIT
 };
 
 class MainWindow : public QMainWindow
@@ -51,6 +63,12 @@ public:
 
 private slots:
   void update();
+
+  void on_connect_rdk_button_clicked();
+  void on_set_idle_button_clicked();
+  void on_set_move_home_button_clicked();
+  void on_set_freedrive_button_clicked();
+  void on_set_teleoperation_button_clicked();
 
 private:
   // User interface
@@ -82,13 +100,31 @@ private:
   Vec6d device_velocity_filtered_ = Vec6d::Zero();
 
   // ========================= Teleoperation =======================
+  // Teleoperation handler
+  std::shared_ptr<flexiv::tdk::DeviceTeleopLan> device_teleop_ptr_;
+
+  // Teleoperation command ptr
+  std::vector<std::shared_ptr<flexiv::tdk::MotionControlCmds>> teleop_cmd_vector_;
+  std::shared_ptr<flexiv::tdk::MotionControlCmds> teleop_cmd_;
+
+  // Robot pointer
+  std::shared_ptr<flexiv::rdk::Robot> robot_ptr_ = nullptr;
+
   // State machine for robot
   StateMachine state_machine_ = SM_DISCONNECT;
+
+  std::array<double, flexiv::tdk::kPoseSize> teleoperation_cmd_pose_;
+  std::array<double, flexiv::tdk::kCartDoF> teleoperation_cmd_vel_;
+  std::array<double, flexiv::tdk::kCartDoF> teleoperation_cmd_acc_;
 
   // Thread for teleoperation
   std::unique_ptr<std::thread> thread_teleoperation_;
 
-  void initUI();
+  void InitUI();
+
+  void UpdateRobotStatus(bool flag_connected, bool flag_operational);
+
+  void RunTeleoperation();
 };
 
 } /* namespace teleoperation */

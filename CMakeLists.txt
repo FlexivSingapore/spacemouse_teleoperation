@@ -31,8 +31,8 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-# Find flexiv_rdk INTERFACE library
-find_package(flexiv_rdk REQUIRED)
+# Find flexiv_tdk INTERFACE library
+find_package(flexiv_tdk REQUIRED)
 
 # ==================================================================================================
 #      CREATE EXECUTABLE
@@ -67,7 +67,7 @@ target_include_directories(${PROJECT_NAME}_app
 )
 
 target_link_libraries(${PROJECT_NAME}_app
-  flexiv::flexiv_rdk  
+  flexiv::flexiv_tdk  
 
   # Libraries for spacemouse device
   ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/spacenavd/lib/libspnav.a
@@ -115,7 +115,7 @@ PUBLIC
 )
 
 target_link_libraries(${PROJECT_NAME}_test
-flexiv::flexiv_rdk
+flexiv::flexiv_tdk
 
 # Libraries for spacemouse device
 ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/spacenavd/lib/libspnav.a

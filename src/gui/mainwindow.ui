@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>671</width>
+    <width>590</width>
     <height>848</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Flexiv Teleoperation</string>
+   <string>Flexiv Spacemouse Teleoperation</string>
   </property>
   <property name="styleSheet">
    <string notr="true">*{
@@ -143,7 +143,7 @@ QTreeView{
                  </widget>
                 </item>
                 <item row="1" column="1">
-                 <widget class="QLabel" name="rdkOperationalStatus_label">
+                 <widget class="QLabel" name="rdk_operational_status_label">
                   <property name="font">
                    <font>
                     <family>Helvetica</family>
@@ -158,7 +158,7 @@ QTreeView{
                  </widget>
                 </item>
                 <item row="0" column="1">
-                 <widget class="QLabel" name="rdkConnectionStatus_label">
+                 <widget class="QLabel" name="rdk_connection_status_label">
                   <property name="font">
                    <font>
                     <family>Helvetica</family>
@@ -228,44 +228,27 @@ QTreeView{
               <string>Robot Connection</string>
              </property>
              <layout class="QGridLayout" name="gridLayout">
-              <item row="1" column="1">
-               <widget class="QLineEdit" name="local_ip_lineEdit">
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="robot_sn_lineEdit">
                 <property name="inputMask">
                  <string/>
                 </property>
                 <property name="text">
-                 <string>192.168.3.105</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0" colspan="2">
-               <widget class="QPushButton" name="connectRdk_button">
-                <property name="text">
-                 <string>Connect</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_2">
-                <property name="text">
-                 <string>Local IP</string>
+                 <string/>
                 </property>
                </widget>
               </item>
               <item row="0" column="0">
                <widget class="QLabel" name="label">
                 <property name="text">
-                 <string>Robot IP</string>
+                 <string>Robot Serial</string>
                 </property>
                </widget>
               </item>
-              <item row="0" column="1">
-               <widget class="QLineEdit" name="robot_ip_lineEdit">
-                <property name="inputMask">
-                 <string/>
-                </property>
+              <item row="1" column="0" colspan="2">
+               <widget class="QPushButton" name="connect_rdk_button">
                 <property name="text">
-                 <string>192.168.3.100</string>
+                 <string>Connect</string>
                 </property>
                </widget>
               </item>
@@ -273,9 +256,9 @@ QTreeView{
             </widget>
            </item>
            <item>
-            <widget class="QGroupBox" name="robotMode_groupBox">
+            <widget class="QGroupBox" name="robot_mode_groupBox">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -288,46 +271,31 @@ QTreeView{
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_2">
               <item>
-               <widget class="QPushButton" name="setIdle_button">
+               <widget class="QPushButton" name="set_idle_button">
                 <property name="text">
                  <string>Set Idle</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="setFreeDrive_button">
+               <widget class="QPushButton" name="set_freedrive_button">
                 <property name="text">
                  <string>Set Free Drive</string>
                 </property>
                </widget>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_2">
-                <item>
-                 <widget class="QPushButton" name="setMoveHome_button">
-                  <property name="text">
-                   <string>Move Home</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="setMovePose1_button">
-                  <property name="text">
-                   <string>Move Pose 1</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="setMovePose2_button">
-                  <property name="text">
-                   <string>Move Pose 2</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
+               <widget class="QPushButton" name="set_move_home_button">
+                <property name="text">
+                 <string>Move Home</string>
+                </property>
+               </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="setTeleoperation_button">
+               <widget class="QPushButton" name="set_teleoperation_button">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
                 <property name="text">
                  <string>Set Teleoperation</string>
                 </property>
@@ -345,50 +313,6 @@ QTreeView{
                  </size>
                 </property>
                </spacer>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item>
-            <widget class="QGroupBox" name="automotion_groupBox">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="title">
-              <string>Automatic motion</string>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_7">
-              <item>
-               <widget class="QPushButton" name="sweep_button">
-                <property name="text">
-                 <string>Sweep</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <layout class="QHBoxLayout" name="horizontalLayout">
-                <item>
-                 <widget class="QPushButton" name="rotatePos90_button">
-                  <property name="text">
-                   <string>Rotate To +90 deg</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="rotate0_button">
-                  <property name="text">
-                   <string>Rotate to 0 deg</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="rotateNeg90_button">
-                  <property name="text">
-                   <string>Rotate To -90 deg</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
               </item>
              </layout>
             </widget>
@@ -467,6 +391,40 @@ QTreeView{
              <property name="currentIndex">
               <number>0</number>
              </property>
+             <widget class="QWidget" name="tab_6">
+              <attribute name="title">
+               <string>Home</string>
+              </attribute>
+              <layout class="QGridLayout" name="gridLayout_5">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_2">
+                 <property name="text">
+                  <string>Home plan name</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="home_plan_name_lineEdit">
+                 <property name="text">
+                  <string>MoveHome</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <spacer name="verticalSpacer_8">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
              <widget class="QWidget" name="tabCartesianStiffness">
               <attribute name="title">
                <string>Cartesian Stiffness</string>
@@ -1127,7 +1085,7 @@ QTreeView{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>671</width>
+     <width>590</width>
      <height>23</height>
     </rect>
    </property>
@@ -1135,12 +1093,11 @@ QTreeView{
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <tabstops>
-  <tabstop>robot_ip_lineEdit</tabstop>
-  <tabstop>local_ip_lineEdit</tabstop>
-  <tabstop>connectRdk_button</tabstop>
-  <tabstop>setIdle_button</tabstop>
-  <tabstop>setFreeDrive_button</tabstop>
-  <tabstop>setTeleoperation_button</tabstop>
+  <tabstop>robot_sn_lineEdit</tabstop>
+  <tabstop>connect_rdk_button</tabstop>
+  <tabstop>set_idle_button</tabstop>
+  <tabstop>set_freedrive_button</tabstop>
+  <tabstop>set_teleoperation_button</tabstop>
  </tabstops>
  <resources/>
  <connections/>

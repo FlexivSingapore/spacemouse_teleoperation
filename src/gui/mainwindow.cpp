@@ -10,10 +10,6 @@
 #include "./ui_mainwindow.h"
 
 namespace {
-constexpr char k_defaultFreeDrivePlan[] = "PLAN-FreeDriveAuto";
-constexpr char k_defaultMoveHome[] = "Sixx_MoveHome-MainPlan";
-constexpr char k_defaultMovePose1[] = "Sixx_MovePose1-MainPlan";
-constexpr char k_defaultMovePose2[] = "Sixx_MovePose2-MainPlan";
 
 constexpr double k_defaultTcpOffsetMaxX = 0.2;
 constexpr double k_defaultTcpOffsetMinX = -0.2;
@@ -44,9 +40,9 @@ MainWindow::MainWindow(QWidget* parent)
   // Check if device is connected
   device_count_ = device_handler_.getNumDevices();
   if (device_count_ == 0) {
-    printf("No haptic device detected\n");
+    spdlog::info("No haptic device detected\n");
   } else if (device_count_ != 1) {
-    printf("More than 1 haptic device detected\n");
+    spdlog::info("More than 1 haptic device detected\n");
   }
 
   // Print information of detected haptic devices
@@ -61,7 +57,7 @@ MainWindow::MainWindow(QWidget* parent)
     device_->open();
 
     if (!device_->calibrate(true)) {
-      printf("Haptic device calibration failed\n");
+      spdlog::info("Haptic device calibration failed\n");
     }
   }
 }

@@ -12,7 +12,8 @@
 namespace flexiv {
 namespace teleoperation {
 
-SpaceMouseDevice::SpaceMouseDevice(unsigned int a_deviceNumber) {
+SpaceMouseDevice::SpaceMouseDevice(unsigned int a_deviceNumber)
+{
   // the connection to your device has not yet been established.
   m_deviceReady = false;
 
@@ -153,7 +154,8 @@ SpaceMouseDevice::SpaceMouseDevice(unsigned int a_deviceNumber) {
     Destructor of SpaceMouseDevice.
 */
 //==============================================================================
-SpaceMouseDevice::~SpaceMouseDevice() {
+SpaceMouseDevice::~SpaceMouseDevice()
+{
   // close connection to device
   if (m_deviceReady) {
     spnav_close();
@@ -168,7 +170,8 @@ SpaceMouseDevice::~SpaceMouseDevice() {
     \return __true__ if the operation succeeds, __false__ otherwise.
 */
 //==============================================================================
-bool SpaceMouseDevice::open() {
+bool SpaceMouseDevice::open()
+{
   // check if the system is available
   if (!m_deviceAvailable)
     return (false);
@@ -220,7 +223,8 @@ bool SpaceMouseDevice::open() {
     \return __true__ if the operation succeeds, __false__ otherwise.
 */
 //==============================================================================
-bool SpaceMouseDevice::close() {
+bool SpaceMouseDevice::close()
+{
   // check if the system has been opened previously
   if (!m_deviceReady)
     return (false);
@@ -253,7 +257,10 @@ bool SpaceMouseDevice::close() {
     \return __true__ if the operation succeeds, __false__ otherwise.
 */
 //==============================================================================
-bool SpaceMouseDevice::calibrate(bool a_forceCalibration) {
+bool SpaceMouseDevice::calibrate(bool a_forceCalibration)
+{
+  (void)a_forceCalibration;
+
   // check if the device is read. See step 3.
   if (!m_deviceReady)
     return (false);
@@ -261,7 +268,7 @@ bool SpaceMouseDevice::calibrate(bool a_forceCalibration) {
   ////////////////////////////////////////////////////////////////////////////
   /*
       STEP 5:
-      
+
       Here you shall implement code that handles a calibration procedure of the
       device. In practice this may include initializing the registers of the
       encoder counters for instance.
@@ -293,7 +300,8 @@ bool SpaceMouseDevice::calibrate(bool a_forceCalibration) {
     \return __true__ if the operation succeeds, __false__ otherwise.
 */
 //==============================================================================
-unsigned int SpaceMouseDevice::getNumDevices() {
+unsigned int SpaceMouseDevice::getNumDevices()
+{
   ////////////////////////////////////////////////////////////////////////////
   /*
       STEP 6:
@@ -334,7 +342,8 @@ unsigned int SpaceMouseDevice::getNumDevices() {
     \return __true__ if the operation succeeds, __false__ otherwise.
 */
 //==============================================================================
-bool SpaceMouseDevice::getPosition(Eigen::Vector3d &a_position) {
+bool SpaceMouseDevice::getPosition(Eigen::Vector3d& a_position)
+{
 
   // check if the device is read. See step 3.
   if (!m_deviceReady)
@@ -457,7 +466,8 @@ bool SpaceMouseDevice::getPosition(Eigen::Vector3d &a_position) {
     \return __true__ if the operation succeeds, __false__ otherwise.
 */
 //==============================================================================
-bool SpaceMouseDevice::getRotation(Eigen::Matrix3d &a_rotation) {
+bool SpaceMouseDevice::getRotation(Eigen::Matrix3d& a_rotation)
+{
   // check if the device is read. See step 3.
   if (!m_deviceReady)
     return (false);
@@ -500,7 +510,8 @@ bool SpaceMouseDevice::getRotation(Eigen::Matrix3d &a_rotation) {
     \return __true__ if the operation succeeds, __false__ otherwise.
 */
 //==============================================================================
-bool SpaceMouseDevice::getGripperAngleRad(double &a_angle) {
+bool SpaceMouseDevice::getGripperAngleRad(double& a_angle)
+{
   // check if the device is read. See step 3.
   if (!m_deviceReady)
     return (false);
@@ -542,8 +553,8 @@ bool SpaceMouseDevice::getGripperAngleRad(double &a_angle) {
 */
 //==============================================================================
 bool SpaceMouseDevice::setForceAndTorqueAndGripperForce(
-    const Eigen::Vector3d &a_force, const Eigen::Vector3d &a_torque,
-    const double a_gripperForce) {
+    const Eigen::Vector3d& a_force, const Eigen::Vector3d& a_torque, const double a_gripperForce)
+{
   // check if the device is read. See step 3.
   if (!m_deviceReady)
     return (false);
@@ -551,7 +562,7 @@ bool SpaceMouseDevice::setForceAndTorqueAndGripperForce(
   ////////////////////////////////////////////////////////////////////////////
   /*
       STEP 10:
-      
+
       Here you may implement code which sends a force (fx,fy,fz),
       torque (tx, ty, tz) and/or gripper force (gf) command to your haptic
      device.
@@ -579,18 +590,6 @@ bool SpaceMouseDevice::setForceAndTorqueAndGripperForce(
   m_prevTorque = a_torque;
   m_prevGripperForce = a_gripperForce;
 
-  // retrieve force, torque, and gripper force components in individual
-  // variables
-  double fx = a_force(0);
-  double fy = a_force(1);
-  double fz = a_force(2);
-
-  double tx = a_torque(0);
-  double ty = a_torque(1);
-  double tz = a_torque(2);
-
-  double gf = a_gripperForce;
-
   // *** INSERT YOUR CODE HERE ***
 
   // exit
@@ -607,7 +606,8 @@ bool SpaceMouseDevice::setForceAndTorqueAndGripperForce(
     \return __true__ if the operation succeeds, __false__ otherwise.
 */
 //==============================================================================
-bool SpaceMouseDevice::getUserSwitches(unsigned int &a_userSwitches) {
+bool SpaceMouseDevice::getUserSwitches(unsigned int& a_userSwitches)
+{
   // check if the device is read. See step 3.
   if (!m_deviceReady)
     return (false);
@@ -623,16 +623,13 @@ bool SpaceMouseDevice::getUserSwitches(unsigned int &a_userSwitches) {
   */
   ////////////////////////////////////////////////////////////////////////////
   a_userSwitches = 0x00;
-  if (m_buttons[0])
-  {
-    a_userSwitches  = a_userSwitches | 0x01;
+  if (m_buttons[0]) {
+    a_userSwitches = a_userSwitches | 0x01;
   }
 
-  if (m_buttons[1])
-  {
-    a_userSwitches  = a_userSwitches | 0x02;
+  if (m_buttons[1]) {
+    a_userSwitches = a_userSwitches | 0x02;
   }
-  
 
   return (true);
 }

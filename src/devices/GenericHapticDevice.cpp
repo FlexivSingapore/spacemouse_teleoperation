@@ -4,7 +4,8 @@ namespace flexiv {
 namespace teleoperation {
 
 GenericHapticDevice::GenericHapticDevice(unsigned int a_deviceNumber)
-    : GenericDevice(a_deviceNumber) {
+: GenericDevice(a_deviceNumber)
+{
 
   m_tpStart = std::chrono::system_clock::now();
 
@@ -87,7 +88,8 @@ GenericHapticDevice::GenericHapticDevice(unsigned int a_deviceNumber)
   m_tpVirtualGripperStart = std::chrono::system_clock::now();
 }
 
-bool GenericHapticDevice::getUserSwitch(int a_switchIndex, bool &a_status) {
+bool GenericHapticDevice::getUserSwitch(int a_switchIndex, bool& a_status)
+{
   // get status of all user switches
   unsigned int userSwitches;
   bool result = getUserSwitches(userSwitches);
@@ -99,12 +101,9 @@ bool GenericHapticDevice::getUserSwitch(int a_switchIndex, bool &a_status) {
   }
 
   // check particular bit
-  if ((userSwitches & (1 << a_switchIndex)) > 0)
-  {
+  if ((userSwitches & (1 << a_switchIndex)) > 0) {
     a_status = true;
-  }
-  else
-  {
+  } else {
     a_status = false;
   }
 
@@ -112,7 +111,8 @@ bool GenericHapticDevice::getUserSwitch(int a_switchIndex, bool &a_status) {
   return (true);
 }
 
-bool GenericHapticDevice::getTransform(Eigen::Matrix4d &a_transform) {
+bool GenericHapticDevice::getTransform(Eigen::Matrix4d& a_transform)
+{
   Eigen::Vector3d pos(0, 0, 0);
   Eigen::Matrix3d rot;
   rot.setIdentity();
@@ -128,16 +128,15 @@ bool GenericHapticDevice::getTransform(Eigen::Matrix4d &a_transform) {
   return (result);
 }
 
-void GenericHapticDevice::estimateLinearVelocity(
-    Eigen::Vector3d &a_newPosition) {
+void GenericHapticDevice::estimateLinearVelocity(Eigen::Vector3d& a_newPosition)
+{
   // get current time
   auto tp_current = std::chrono::system_clock::now();
   std::chrono::duration<double> diff = tp_current - m_tpStart;
   double time = diff.count();
 
   // check the time interval between the current and previous sample
-  if ((time - m_historyPos[m_indexHistoryPos].m_time) <
-      DEVICE_MIN_ACQUISITION_TIME) {
+  if ((time - m_historyPos[m_indexHistoryPos].m_time) < DEVICE_MIN_ACQUISITION_TIME) {
     return;
   }
 
@@ -152,12 +151,10 @@ void GenericHapticDevice::estimateLinearVelocity(
   bool completed = false;
   while ((i < DEVICE_HISTORY_SIZE) && (!completed)) {
     double interval = time - m_historyPos[m_indexHistoryPosWin].m_time;
-    if ((interval < m_linearVelocityWindowSize) ||
-        (i == (DEVICE_HISTORY_SIZE - 1))) {
+    if ((interval < m_linearVelocityWindowSize) || (i == (DEVICE_HISTORY_SIZE - 1))) {
       // compute result
       Eigen::Vector3d result;
-      result = m_historyPos[m_indexHistoryPos].m_pos -
-               m_historyPos[m_indexHistoryPosWin].m_pos;
+      result = m_historyPos[m_indexHistoryPos].m_pos - m_historyPos[m_indexHistoryPosWin].m_pos;
       if (interval > 0) {
         m_linearVelocity = result / interval;
         completed = true;
@@ -170,16 +167,15 @@ void GenericHapticDevice::estimateLinearVelocity(
   }
 }
 
-void GenericHapticDevice::estimateAngularVelocity(
-    Eigen::Matrix3d &a_newRotation) {
+void GenericHapticDevice::estimateAngularVelocity(Eigen::Matrix3d& a_newRotation)
+{
   // get current time
   auto tp_current = std::chrono::system_clock::now();
   std::chrono::duration<double> diff = tp_current - m_tpStart;
   double time = diff.count();
 
   // check the time interval between the current and previous sample
-  if ((time - m_historyRot[m_indexHistoryRot].m_time) <
-      DEVICE_MIN_ACQUISITION_TIME) {
+  if ((time - m_historyRot[m_indexHistoryRot].m_time) < DEVICE_MIN_ACQUISITION_TIME) {
     return;
   }
 
@@ -194,13 +190,11 @@ void GenericHapticDevice::estimateAngularVelocity(
   bool completed = false;
   while ((i < DEVICE_HISTORY_SIZE) && (!completed)) {
     double interval = time - m_historyRot[m_indexHistoryRotWin].m_time;
-    if ((interval < m_angularVelocityWindowSize) ||
-        (i == (DEVICE_HISTORY_SIZE - 1))) {
+    if ((interval < m_angularVelocityWindowSize) || (i == (DEVICE_HISTORY_SIZE - 1))) {
       // compute result
       if (interval > 0) {
-        Eigen::Matrix3d mat =
-            m_historyRot[m_indexHistoryRotWin].m_rot.transpose() *
-            m_historyRot[m_indexHistoryRot].m_rot;
+        Eigen::Matrix3d mat = m_historyRot[m_indexHistoryRotWin].m_rot.transpose()
+                              * m_historyRot[m_indexHistoryRot].m_rot;
         Eigen::AngleAxisd angleAxis;
         angleAxis.fromRotationMatrix(mat);
 
@@ -220,15 +214,15 @@ void GenericHapticDevice::estimateAngularVelocity(
   }
 }
 
-void GenericHapticDevice::estimateGripperVelocity(double a_newGripperAngle) {
+void GenericHapticDevice::estimateGripperVelocity(double a_newGripperAngle)
+{
   // get current time
   auto tp_current = std::chrono::system_clock::now();
   std::chrono::duration<double> diff = tp_current - m_tpStart;
   double time = diff.count();
 
   // check the time interval between the current and previous sample
-  if ((time - m_historyGripper[m_indexHistoryGripper].m_time) <
-      DEVICE_MIN_ACQUISITION_TIME) {
+  if ((time - m_historyGripper[m_indexHistoryGripper].m_time) < DEVICE_MIN_ACQUISITION_TIME) {
     return;
   }
 
@@ -243,34 +237,33 @@ void GenericHapticDevice::estimateGripperVelocity(double a_newGripperAngle) {
   bool completed = false;
   while ((i < DEVICE_HISTORY_SIZE) && (!completed)) {
     double interval = time - m_historyGripper[m_indexHistoryGripperWin].m_time;
-    if ((interval < m_gripperVelocityWindowSize) ||
-        (i == (DEVICE_HISTORY_SIZE - 1))) {
+    if ((interval < m_gripperVelocityWindowSize) || (i == (DEVICE_HISTORY_SIZE - 1))) {
       // compute result
       if (interval > 0) {
-        m_gripperAngularVelocity =
-            (m_historyGripper[m_indexHistoryGripper].m_value -
-             m_historyGripper[m_indexHistoryGripperWin].m_value) /
-            interval;
+        m_gripperAngularVelocity = (m_historyGripper[m_indexHistoryGripper].m_value
+                                       - m_historyGripper[m_indexHistoryGripperWin].m_value)
+                                   / interval;
         completed = true;
       } else {
         completed = true;
       }
     } else {
-      m_indexHistoryGripperWin =
-          (m_indexHistoryGripperWin + 1) % DEVICE_HISTORY_SIZE;
+      m_indexHistoryGripperWin = (m_indexHistoryGripperWin + 1) % DEVICE_HISTORY_SIZE;
     }
   }
 }
 
 double GenericHapticDevice::computeGripperUserSwitchForce(
-    const double &a_gripperAngle, const double &a_gripperAngularVelocity) {
+    const double& a_gripperAngle, const double& a_gripperAngularVelocity)
+{
+  (void)a_gripperAngularVelocity;
+
   if (m_gripperUserSwitchEnabled) {
     // compute damping term
     double damping = 0.0;
     double gripperAngularVelocity = 0.0;
     getGripperAngularVelocity(gripperAngularVelocity);
-    damping = -0.1 * m_specifications.m_maxGripperAngularDamping *
-              gripperAngularVelocity;
+    damping = -0.1 * m_specifications.m_maxGripperAngularDamping * gripperAngularVelocity;
 
     // PHASE 0: outside of switch, zero force
     if (a_gripperAngle > m_gripperUserSwitchAngleStart) {
@@ -279,12 +272,11 @@ double GenericHapticDevice::computeGripperUserSwitchForce(
     }
 
     // PHASE 1: switch is being engaged. (Force is rising until "click")
-    else if ((a_gripperAngle <= m_gripperUserSwitchAngleStart) &&
-             (a_gripperAngle > m_gripperUserSwitchAngleClick)) {
-      double force =
-          (m_gripperUserSwitchAngleStart - a_gripperAngle) *
-          ((m_gripperUserSwitchForceClick) /
-           (m_gripperUserSwitchAngleStart - m_gripperUserSwitchAngleClick));
+    else if ((a_gripperAngle <= m_gripperUserSwitchAngleStart)
+             && (a_gripperAngle > m_gripperUserSwitchAngleClick)) {
+      double force = (m_gripperUserSwitchAngleStart - a_gripperAngle)
+                     * ((m_gripperUserSwitchForceClick)
+                         / (m_gripperUserSwitchAngleStart - m_gripperUserSwitchAngleClick));
       return (force + damping);
     }
 
@@ -298,9 +290,10 @@ double GenericHapticDevice::computeGripperUserSwitchForce(
   return (0.0);
 }
 
-bool GenericHapticDevice::getGripperUserSwitch() {
-  if (m_gripperUserSwitchEnabled && m_specifications.m_sensedGripper &&
-      m_specifications.m_actuatedGripper) {
+bool GenericHapticDevice::getGripperUserSwitch()
+{
+  if (m_gripperUserSwitchEnabled && m_specifications.m_sensedGripper
+      && m_specifications.m_actuatedGripper) {
     double gripperAngle;
     if (getGripperAngleDeg(gripperAngle)) {
       if (gripperAngle < m_gripperUserSwitchAngleClick) {
@@ -316,15 +309,15 @@ bool GenericHapticDevice::getGripperUserSwitch() {
   }
 }
 
-bool GenericHapticDevice::getGripperAngleRad(double &a_angle) {
+bool GenericHapticDevice::getGripperAngleRad(double& a_angle)
+{
   // get user switch
   bool userSwitch = false;
   getUserSwitch(0, userSwitch);
 
   // read clock time
   auto tpVirtualGripperCurrent = std::chrono::system_clock::now();
-  std::chrono::duration<double> diff =
-      tpVirtualGripperCurrent - m_tpVirtualGripperStart;
+  std::chrono::duration<double> diff = tpVirtualGripperCurrent - m_tpVirtualGripperStart;
   double timeElapsed = diff.count();
   m_tpVirtualGripperStart = tpVirtualGripperCurrent;
 
@@ -332,13 +325,11 @@ bool GenericHapticDevice::getGripperAngleRad(double &a_angle) {
   double nextAngle;
   if (userSwitch) {
     // simulating the closing of the virtual gripper
-    nextAngle =
-        m_virtualGripperAngle - m_virtualGripperAngularVelocity * timeElapsed;
+    nextAngle = m_virtualGripperAngle - m_virtualGripperAngularVelocity * timeElapsed;
     m_gripperAngularVelocity = -m_virtualGripperAngularVelocity;
   } else {
     // simulating the opening of the virtual gripper
-    nextAngle =
-        m_virtualGripperAngle + m_virtualGripperAngularVelocity * timeElapsed;
+    nextAngle = m_virtualGripperAngle + m_virtualGripperAngularVelocity * timeElapsed;
     m_gripperAngularVelocity = m_virtualGripperAngularVelocity;
   }
 

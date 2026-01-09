@@ -113,9 +113,16 @@ private:
   // State machine for robot
   StateMachine state_machine_ = SM_DISCONNECT;
 
+  // Teleoperation commands
   std::array<double, flexiv::tdk::kPoseSize> teleoperation_cmd_pose_;
   std::array<double, flexiv::tdk::kCartDoF> teleoperation_cmd_vel_;
   std::array<double, flexiv::tdk::kCartDoF> teleoperation_cmd_acc_;
+
+  // Robot teleoperation start pose
+  Pose teleoperation_start_pose_;
+
+  // Slave TCP pose offset
+  Pose m_slaveOffsetTcpPose;
 
   // Thread for teleoperation
   std::unique_ptr<std::thread> thread_teleoperation_;

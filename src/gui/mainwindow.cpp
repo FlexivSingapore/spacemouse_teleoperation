@@ -168,9 +168,19 @@ void MainWindow::update()
       // Update teleoperation pose command to the current pose
       flexiv::rdk::RobotStates robot_states = robot_ptr_->states();
       teleoperation_cmd_pose_ = robot_states.tcp_pose;
+      teleoperation_cmd_vel_.fill(0);
+      teleoperation_cmd_acc_.fill(0);
       teleop_cmd_->write(teleoperation_cmd_pose_, teleoperation_cmd_vel_, teleoperation_cmd_acc_);
 
-      // Setup thread to run NRT stream cartesian command
+      // Save current robot TCP position and rotation as the first reference position and rotation
+      for (size_t i = 0; i < k_cartPositionDofs; i++) {
+        teleoperation_start_pose_.pos[i] = robot_states.tcp_pose[i];
+      }
+      Eigen::Quaterniond q(robot_states.tcp_pose[3], robot_states.tcp_pose[4],
+          robot_states.tcp_pose[5], robot_states.tcp_pose[6]);
+      teleoperation_start_pose_.rot = q.toRotationMatrix();
+
+      // Setup thread for teleoperation
       thread_teleoperation_
           = std::make_unique<std::thread>(std::bind(&MainWindow::RunTeleoperation, this));
 

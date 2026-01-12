@@ -539,7 +539,7 @@ void MainWindow::RunTeleoperation()
 
     // Filter device velocity
     for (size_t i = 0; i < k_cartPoseDofs; i++) {
-      device_velocity_filtered_[i] = 0;
+      device_velocity_filtered_[i] = 0.8 * device_velocity_filtered_[i] + 0.2 * device_velocity_[i];
     }
 
     auto linear_velocity_filtered = device_velocity_filtered_.head(k_cartPositionDofs);

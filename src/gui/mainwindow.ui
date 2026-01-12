@@ -438,7 +438,7 @@ QTreeView{
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QDoubleSpinBox" name="teleopTranslationalStiffness_doubleSpinBox">
+                <widget class="QDoubleSpinBox" name="teleop_translational_stiffness_doubleSpinBox">
                  <property name="decimals">
                   <number>1</number>
                  </property>
@@ -472,7 +472,7 @@ QTreeView{
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QDoubleSpinBox" name="teleopRotationalStiffness_doubleSpinBox">
+                <widget class="QDoubleSpinBox" name="teleop_rotational_stiffness_doubleSpinBox">
                  <property name="decimals">
                   <number>1</number>
                  </property>
@@ -515,7 +515,7 @@ QTreeView{
                   </attribute>
                   <layout class="QGridLayout" name="gridLayout_3">
                    <item row="0" column="1">
-                    <widget class="QDoubleSpinBox" name="maxXOffset_doubleSpinBox">
+                    <widget class="QDoubleSpinBox" name="max_x_offset_doubleSpinBox">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
@@ -544,7 +544,7 @@ QTreeView{
                     </widget>
                    </item>
                    <item row="3" column="1">
-                    <widget class="QDoubleSpinBox" name="minYOffset_doubleSpinBox">
+                    <widget class="QDoubleSpinBox" name="min_y_offset_doubleSpinBox">
                      <property name="decimals">
                       <number>3</number>
                      </property>
@@ -584,7 +584,7 @@ QTreeView{
                     </widget>
                    </item>
                    <item row="2" column="1">
-                    <widget class="QDoubleSpinBox" name="maxYOffset_doubleSpinBox">
+                    <widget class="QDoubleSpinBox" name="max_y_offset_doubleSpinBox">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
@@ -613,7 +613,7 @@ QTreeView{
                     </widget>
                    </item>
                    <item row="4" column="1">
-                    <widget class="QDoubleSpinBox" name="maxZOffset_doubleSpinBox">
+                    <widget class="QDoubleSpinBox" name="max_z_offset_doubleSpinBox">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
@@ -670,7 +670,7 @@ QTreeView{
                     </widget>
                    </item>
                    <item row="1" column="1">
-                    <widget class="QDoubleSpinBox" name="minXOffset_doubleSpinBox">
+                    <widget class="QDoubleSpinBox" name="min_x_offset_doubleSpinBox">
                      <property name="decimals">
                       <number>3</number>
                      </property>
@@ -696,7 +696,7 @@ QTreeView{
                     </widget>
                    </item>
                    <item row="5" column="1">
-                    <widget class="QDoubleSpinBox" name="minZOffset_doubleSpinBox">
+                    <widget class="QDoubleSpinBox" name="min_z_offset_doubleSpinBox">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
@@ -794,8 +794,61 @@ QTreeView{
                <string>Force Limit</string>
               </attribute>
               <layout class="QGridLayout" name="gridLayout_7">
+               <item row="0" column="2">
+                <widget class="QLabel" name="label_21">
+                 <property name="text">
+                  <string>N</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_31">
+                 <property name="text">
+                  <string>Max contact tcp force y</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QDoubleSpinBox" name="max_tcp_force_y_doubleSpinBox">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimum">
+                  <double>5.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>30.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>20.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <spacer name="verticalSpacer_4">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="1" column="2">
+                <widget class="QLabel" name="label_32">
+                 <property name="text">
+                  <string>N</string>
+                 </property>
+                </widget>
+               </item>
                <item row="0" column="1">
-                <widget class="QDoubleSpinBox" name="maxForceNorm_doubleSpinBox">
+                <widget class="QDoubleSpinBox" name="max_tcp_force_x_doubleSpinBox">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -816,25 +869,38 @@ QTreeView{
                <item row="0" column="0">
                 <widget class="QLabel" name="label_20">
                  <property name="text">
-                  <string>Maximum force</string>
+                  <string>Max contact tcp force x</string>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="0">
-                <spacer name="verticalSpacer_4">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_33">
+                 <property name="text">
+                  <string>Max contact tcp force z</string>
                  </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                </spacer>
+                </widget>
                </item>
-               <item row="0" column="2">
-                <widget class="QLabel" name="label_21">
+               <item row="2" column="1">
+                <widget class="QDoubleSpinBox" name="max_tcp_force_z_doubleSpinBox">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimum">
+                  <double>5.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>30.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>20.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="2">
+                <widget class="QLabel" name="label_34">
                  <property name="text">
                   <string>N</string>
                  </property>
@@ -962,7 +1028,7 @@ QTreeView{
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QDoubleSpinBox" name="motionRotationSF_doubleSpinBox">
+                <widget class="QDoubleSpinBox" name="motion_rotation_scale_doubleSpinBox">
                  <property name="maximum">
                   <double>4.000000000000000</double>
                  </property>
@@ -985,7 +1051,7 @@ QTreeView{
                 </spacer>
                </item>
                <item row="0" column="1">
-                <widget class="QDoubleSpinBox" name="motionTranslationSF_doubleSpinBox">
+                <widget class="QDoubleSpinBox" name="motion_translation_scale_doubleSpinBox">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>

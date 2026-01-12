@@ -118,11 +118,35 @@ private:
   std::array<double, flexiv::tdk::kCartDoF> teleoperation_cmd_vel_;
   std::array<double, flexiv::tdk::kCartDoF> teleoperation_cmd_acc_;
 
-  // Robot teleoperation start pose
+  // Teleoperation target TCP pose
+  Pose teleoperation_target_pose_;
+
+  // Teleoperation start TCP pose
   Pose teleoperation_start_pose_;
 
-  // Slave TCP pose offset
-  Pose m_slaveOffsetTcpPose;
+  // Teleoperation TCP pose offset
+  Pose teleoperation_offset_pose;
+
+  // Maximum and minimum offset position
+  Eigen::Vector3d teleoperation_offset_max_;
+  Eigen::Vector3d teleoperation_offset_min_;
+
+  // Translational and rotational Cartesian stiffness
+  double translational_stiffness_ = 400;
+  double rotational_stiffness_ = 100;
+
+  // Maximum contact force
+  double max_contact_force_x_ = 5.0;
+  double max_contact_force_y_ = 5.0;
+  double max_contact_force_z_ = 5.0;
+
+  // Translation and rotational scaling
+  double translational_scaling_ = 1.0;
+  double rotational_scaling_ = 1.0;
+
+  // Display forces information
+  int display_force_percentage_ = 0;
+  double display_force_norm_ = 0;
 
   // Thread for teleoperation
   std::unique_ptr<std::thread> thread_teleoperation_;

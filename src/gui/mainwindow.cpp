@@ -11,15 +11,14 @@
 
 namespace {
 
-constexpr double k_defaultTcpOffsetMaxX = 0.2;
-constexpr double k_defaultTcpOffsetMinX = -0.2;
-constexpr double k_defaultTcpOffsetMaxY = 0.2;
-constexpr double k_defaultTcpOffsetMinY = -0.2;
-constexpr double k_defaultTcpOffsetMaxZ = 0.2;
-constexpr double k_defaultTcpOffsetMinZ = -0.2;
+constexpr double kDefaultTcpOffsetMaxX = 0.2;
+constexpr double kDefaultTcpOffsetMinX = -0.2;
+constexpr double kDefaultTcpOffsetMaxY = 0.2;
+constexpr double kDefaultTcpOffsetMinY = -0.2;
+constexpr double kDefaultTcpOffsetMaxZ = 0.2;
+constexpr double kDefaultTcpOffsetMinZ = -0.2;
 
-constexpr float k_fc = 10;
-constexpr float k_wc = 5 * M_PI * k_fc;
+constexpr double kDisplayForceMaxValue = 50;
 }
 
 namespace flexiv {
@@ -60,6 +59,17 @@ MainWindow::MainWindow(QWidget* parent)
       spdlog::info("Haptic device calibration failed\n");
     }
   }
+
+  // Initialize UI
+  InitUI();
+
+  // Set default parameters
+  teleoperation_offset_max_.x() = kDefaultTcpOffsetMaxX;
+  teleoperation_offset_max_.y() = kDefaultTcpOffsetMaxY;
+  teleoperation_offset_max_.z() = kDefaultTcpOffsetMaxZ;
+  teleoperation_offset_min_.x() = kDefaultTcpOffsetMinX;
+  teleoperation_offset_min_.y() = kDefaultTcpOffsetMinY;
+  teleoperation_offset_min_.z() = kDefaultTcpOffsetMinZ;
 }
 
 MainWindow::~MainWindow()
@@ -172,13 +182,56 @@ void MainWindow::update()
       teleoperation_cmd_acc_.fill(0);
       teleop_cmd_->write(teleoperation_cmd_pose_, teleoperation_cmd_vel_, teleoperation_cmd_acc_);
 
+      // ==== Pre-processing before running teleoperation ====
+      // Initial Reference Pose
+      //=============================================================================
       // Save current robot TCP position and rotation as the first reference position and rotation
       for (size_t i = 0; i < k_cartPositionDofs; i++) {
+        teleoperation_target_pose_.pos[i] = robot_states.tcp_pose[i];
         teleoperation_start_pose_.pos[i] = robot_states.tcp_pose[i];
       }
       Eigen::Quaterniond q(robot_states.tcp_pose[3], robot_states.tcp_pose[4],
           robot_states.tcp_pose[5], robot_states.tcp_pose[6]);
+      teleoperation_target_pose_.rot = q.toRotationMatrix();
       teleoperation_start_pose_.rot = q.toRotationMatrix();
+
+      // Set the offset pose to identity
+      teleoperation_offset_pose.pos = Eigen::Vector3d::Zero();
+      teleoperation_offset_pose.rot = Eigen::Matrix3d::Identity();
+
+      // Cartesian stiffness
+      //=============================================================================
+      // Set slave Cartesian stiffness
+      translational_stiffness_ = ui_->teleop_translational_stiffness_doubleSpinBox->value();
+      rotational_stiffness_ = ui_->teleop_rotational_stiffness_doubleSpinBox->value();
+      std::array<double, flexiv::tdk::kCartDoF> cartesian_stiffness
+          = {translational_stiffness_, translational_stiffness_, translational_stiffness_,
+              rotational_stiffness_, rotational_stiffness_, rotational_stiffness_};
+      robot_ptr_->SetCartesianImpedance(cartesian_stiffness);
+
+      // Workspace offset
+      //=============================================================================
+      teleoperation_offset_max_.x() = ui_->max_x_offset_doubleSpinBox->value();
+      teleoperation_offset_max_.y() = ui_->max_y_offset_doubleSpinBox->value();
+      teleoperation_offset_max_.z() = ui_->max_z_offset_doubleSpinBox->value();
+
+      teleoperation_offset_min_.x() = ui_->min_x_offset_doubleSpinBox->value();
+      teleoperation_offset_min_.y() = ui_->min_y_offset_doubleSpinBox->value();
+      teleoperation_offset_min_.z() = ui_->min_z_offset_doubleSpinBox->value();
+
+      // Translation and rotation scaling
+      //=============================================================================
+      translational_scaling_ = ui_->motion_translation_scale_doubleSpinBox->value();
+      rotational_scaling_ = ui_->motion_rotation_scale_doubleSpinBox->value();
+
+      // Max contact wrench
+      //=============================================================================
+      max_contact_force_x_ = ui_->max_tcp_force_x_doubleSpinBox->value();
+      max_contact_force_y_ = ui_->max_tcp_force_y_doubleSpinBox->value();
+      max_contact_force_z_ = ui_->max_tcp_force_z_doubleSpinBox->value();
+      std::array<double, flexiv::tdk::kCartDoF> max_contact_wrench
+          = {max_contact_force_x_, max_contact_force_y_, max_contact_force_y_, 40, 40, 40};
+      robot_ptr_->SetMaxContactWrench(max_contact_wrench);
 
       // Setup thread for teleoperation
       thread_teleoperation_
@@ -190,6 +243,9 @@ void MainWindow::update()
     }
 
     case SM_TELEOP: {
+      // Update display forces
+      ui_->force_lcdNumber->display(display_force_norm_);
+      ui_->force_progressBar->setValue(display_force_percentage_);
       break;
     }
 
@@ -381,7 +437,12 @@ void MainWindow::on_set_teleoperation_button_clicked()
 
 void MainWindow::InitUI()
 {
-  //
+  ui_->max_x_offset_doubleSpinBox->setValue(kDefaultTcpOffsetMaxX);
+  ui_->max_y_offset_doubleSpinBox->setValue(kDefaultTcpOffsetMaxY);
+  ui_->max_z_offset_doubleSpinBox->setValue(kDefaultTcpOffsetMaxZ);
+  ui_->min_x_offset_doubleSpinBox->setValue(kDefaultTcpOffsetMinX);
+  ui_->min_y_offset_doubleSpinBox->setValue(kDefaultTcpOffsetMinY);
+  ui_->min_z_offset_doubleSpinBox->setValue(kDefaultTcpOffsetMinZ);
 }
 
 void MainWindow::UpdateRobotStatus(bool flag_connected, bool flag_operational)
@@ -412,10 +473,156 @@ void MainWindow::UpdateRobotStatus(bool flag_connected, bool flag_operational)
 void MainWindow::RunTeleoperation()
 {
   while ((state_machine_ == SM_TELEOP)) {
-    teleoperation_cmd_pose_[2] += 0.001;
+    // ============================
+    // Display force value
+    // ============================
+    // Read current robot state
+    auto robot_states = robot_ptr_->states();
+
+    Eigen::Vector3d force_in_base(robot_states.ext_wrench_in_world[0],
+        robot_states.ext_wrench_in_world[1], robot_states.ext_wrench_in_world[2]);
+    display_force_norm_ = force_in_base.norm();
+
+    double percentage_force_max = force_in_base.norm() / kDisplayForceMaxValue * 100;
+    if (percentage_force_max > 100) {
+      percentage_force_max = 100;
+    }
+    display_force_percentage_ = static_cast<int>(percentage_force_max);
+
+    // ==================================
+    // Haptic device input
+    // ==================================
+    // Read input from haptic device
+    device_->getPosition(device_pose_.pos);
+    device_->getRotation(device_pose_.rot);
+    device_->getLinearVelocity(device_velocity_.head(k_cartPositionDofs));
+    device_->getAngularVelocity(device_velocity_.tail(k_cartOrientationDofs));
+
+    // Filter device velocity
+    for (size_t i = 0; i < k_cartPoseDofs; i++) {
+      device_velocity_filtered_[i] = 0.8 * device_velocity_filtered_[i] + 0.2 * device_velocity_[i];
+    }
+
+    auto linear_velocity_filtered = device_velocity_filtered_.head(k_cartPositionDofs);
+    auto angular_velocity_filtered = device_velocity_filtered_.tail(k_cartOrientationDofs);
+
+    // ============================
+    // Limit velocity due to force
+    // ============================
+    // Get the current robot position
+    Eigen::Vector3d robot_current_position(
+        robot_states.tcp_pose[0], robot_states.tcp_pose[1], robot_states.tcp_pose[2]);
+
+    // Get the difference between target position and current position
+    Eigen::Vector3d robot_target_position(teleoperation_target_pose_.pos.x(),
+        teleoperation_target_pose_.pos.y(), teleoperation_target_pose_.pos.z());
+    Eigen::Vector3d position_difference = robot_current_position - robot_target_position;
+
+    double position_difference_norm = position_difference.norm();
+    double boundary_norm = kDisplayForceMaxValue / translational_stiffness_;
+
+    if (position_difference_norm >= boundary_norm) {
+      Eigen::Vector3d position_difference_direction_vector
+          = position_difference / position_difference.norm();
+
+      // Only accept linear velocity that is pointing to the robot actual position
+      double norm_in_direction_towards_robot
+          = linear_velocity_filtered.dot(position_difference_direction_vector);
+
+      if (norm_in_direction_towards_robot > 0) {
+        linear_velocity_filtered
+            = norm_in_direction_towards_robot * position_difference_direction_vector;
+      } else {
+        linear_velocity_filtered.setZero();
+      }
+    }
+
+    // ============================
+    // Integrate linear velocity
+    // ============================
+    // Integrate linear velocity to get new TCP position
+    teleoperation_offset_pose.pos.x()
+        += linear_velocity_filtered(0) * k_loopPeriod * -1.0 * 0.1 * translational_scaling_;
+    teleoperation_offset_pose.pos.y()
+        += linear_velocity_filtered(1) * k_loopPeriod * -1.0 * 0.1 * translational_scaling_;
+    teleoperation_offset_pose.pos.z()
+        += linear_velocity_filtered(2) * k_loopPeriod * 0.1 * translational_scaling_;
+
+    // Limit slave Tcp pose offset to within a bound
+    if (teleoperation_offset_pose.pos.x() >= teleoperation_offset_max_.x()) {
+      teleoperation_offset_pose.pos.x() = teleoperation_offset_max_.x();
+    } else if (teleoperation_offset_pose.pos.x() <= teleoperation_offset_min_.x()) {
+      teleoperation_offset_pose.pos.x() = teleoperation_offset_min_.x();
+    }
+
+    if (teleoperation_offset_pose.pos.y() >= teleoperation_offset_max_.y()) {
+      teleoperation_offset_pose.pos.y() = teleoperation_offset_max_.y();
+    } else if (teleoperation_offset_pose.pos.y() <= teleoperation_offset_min_.y()) {
+      teleoperation_offset_pose.pos.y() = teleoperation_offset_min_.y();
+    }
+
+    if (teleoperation_offset_pose.pos.z() >= teleoperation_offset_max_.z()) {
+      teleoperation_offset_pose.pos.z() = teleoperation_offset_max_.z();
+    } else if (teleoperation_offset_pose.pos.z() <= teleoperation_offset_min_.z()) {
+      teleoperation_offset_pose.pos.z() = teleoperation_offset_min_.z();
+    }
+
+    // ============================
+    // Integrate angular velocity
+    // ============================
+    // Integrate angular velocity to get new TCP orientation
+    Eigen::AngleAxisd angle_axis;
+    double angular_velocity_norm = angular_velocity_filtered.norm();
+    if (angular_velocity_norm <= k_epsilon) {
+      angle_axis.angle() = 0;
+      angle_axis.axis() = {0, 0, 1};
+    } else {
+      angle_axis.angle() = angular_velocity_norm * k_loopPeriod * 0.1 * rotational_scaling_;
+      Eigen::Vector3d axis = angular_velocity_filtered / angular_velocity_norm;
+      angle_axis.axis().x() = axis.x() * -1.0;
+      angle_axis.axis().y() = axis.y() * -1.0;
+      angle_axis.axis().z() = axis.z();
+    }
+    teleoperation_offset_pose.rot = angle_axis.toRotationMatrix() * teleoperation_offset_pose.rot;
+
+    // Limit slave rotation
+    Eigen::AngleAxisd slave_rotation_angle_axis;
+    slave_rotation_angle_axis.fromRotationMatrix(teleoperation_offset_pose.rot);
+
+    if (slave_rotation_angle_axis.angle() >= M_PI / 4) {
+      slave_rotation_angle_axis.angle() = M_PI / 4;
+    }
+    teleoperation_offset_pose.rot = slave_rotation_angle_axis.toRotationMatrix();
+
+    // ============================
+    // Calculate the target pose
+    // ============================
+    // Set target TCP pose
+    teleoperation_target_pose_.pos = teleoperation_start_pose_.pos + teleoperation_offset_pose.pos;
+    teleoperation_target_pose_.rot = teleoperation_offset_pose.rot * teleoperation_start_pose_.rot;
+
+    // ============================
+    // Send target tcp pose to robot
+    // ============================
+    // Form pose vector
+    for (size_t i = 0; i < 3; i++) {
+      teleoperation_cmd_pose_[i] = teleoperation_target_pose_.pos[i];
+    }
+    Eigen::Quaterniond targetQuat(teleoperation_target_pose_.rot);
+    teleoperation_cmd_pose_[3] = targetQuat.w();
+    teleoperation_cmd_pose_[4] = targetQuat.x();
+    teleoperation_cmd_pose_[5] = targetQuat.y();
+    teleoperation_cmd_pose_[6] = targetQuat.z();
+
+    // ==================================
+    // Teleoperation
+    // ==================================
     teleop_cmd_->write(teleoperation_cmd_pose_, teleoperation_cmd_vel_, teleoperation_cmd_acc_);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    device_->setForceAndTorqueAndGripperForce(
+        Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(0, 0, 0), 0);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 }
 

@@ -528,7 +528,6 @@ void MainWindow::RunTeleoperation()
     }
     display_force_percentage_ = static_cast<int>(percentage_force_max);
 
-    /*
     // ==================================
     // Haptic device input
     // ==================================
@@ -537,7 +536,6 @@ void MainWindow::RunTeleoperation()
     device_->getRotation(device_pose_.rot);
     device_->getLinearVelocity(device_velocity_.head(k_cartPositionDofs));
     device_->getAngularVelocity(device_velocity_.tail(k_cartOrientationDofs));
-    */
 
     // Filter device velocity
     for (size_t i = 0; i < k_cartPoseDofs; i++) {
@@ -663,10 +661,8 @@ void MainWindow::RunTeleoperation()
     robot_ptr_->SendCartesianMotionForce(
         target_tcp_pose, {}, {}, m_translationVelLimit, m_rotationVelLimit);
 
-    /*
     device_->setForceAndTorqueAndGripperForce(
         Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(0, 0, 0), 0);
-    */
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }

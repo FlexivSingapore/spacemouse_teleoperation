@@ -14,6 +14,8 @@ namespace teleoperation {
 
 SpaceMouseDevice::SpaceMouseDevice(unsigned int a_deviceNumber)
 {
+  (void)a_deviceNumber;
+
   // the connection to your device has not yet been established.
   m_deviceReady = false;
 

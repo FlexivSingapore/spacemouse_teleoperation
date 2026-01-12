@@ -416,7 +416,6 @@ void MainWindow::on_set_freedrive_button_clicked()
 void MainWindow::on_set_teleoperation_button_clicked()
 {
   if (state_machine_ == SM_IDLE) {
-    /*
     if (device_count_ > 0) {
       state_machine_ = SM_TELEOP_INIT;
       ui_->set_idle_button->setEnabled(true);
@@ -426,7 +425,6 @@ void MainWindow::on_set_teleoperation_button_clicked()
     } else {
       spdlog::error("No haptic device available. Unable to run teleoperation");
     }
-    */
     state_machine_ = SM_TELEOP_INIT;
     ui_->set_idle_button->setEnabled(true);
     ui_->set_freedrive_button->setEnabled(false);

@@ -5,14 +5,16 @@ namespace teleoperation {
 
 GenericDevice::GenericDevice(unsigned int a_deviceNumber)
 {
-    //* Flag indicating availability of device */
-    m_deviceAvailable = false;
+  (void)a_deviceNumber;
 
-    //* Flag indicating whether device is ready to receive commands */
-    m_deviceReady = false;
+  //* Flag indicating availability of device */
+  m_deviceAvailable = false;
 
-    //* Device ID */
-    m_deviceNumber = -1;
+  //* Flag indicating whether device is ready to receive commands */
+  m_deviceReady = false;
+
+  //* Device ID */
+  m_deviceNumber = -1;
 };
 
 } // namespace teleoperation

@@ -19,6 +19,8 @@ constexpr double kDefaultTcpOffsetMaxZ = 0.2;
 constexpr double kDefaultTcpOffsetMinZ = -0.2;
 
 constexpr double kDisplayForceMaxValue = 50;
+constexpr double kTranslationalDefaultScalingFactor = 0.1;
+constexpr double kRotationalDefaultScalingFactor = 0.2;
 }
 
 namespace flexiv {
@@ -172,15 +174,8 @@ void MainWindow::update()
 
     case SM_TELEOP_PREPROCESS: {
 
-      device_teleop_ptr_->Init();
-      device_teleop_ptr_->Start(teleop_cmd_vector_);
-
       // Update teleoperation pose command to the current pose
       flexiv::rdk::RobotStates robot_states = robot_ptr_->states();
-      teleoperation_cmd_pose_ = robot_states.tcp_pose;
-      teleoperation_cmd_vel_.fill(0);
-      teleoperation_cmd_acc_.fill(0);
-      teleop_cmd_->write(teleoperation_cmd_pose_, teleoperation_cmd_vel_, teleoperation_cmd_acc_);
 
       // ==== Pre-processing before running teleoperation ====
       // Initial Reference Pose
@@ -201,10 +196,13 @@ void MainWindow::update()
 
       // Cartesian stiffness
       //=============================================================================
+      // Set operation mode to NRT
+      robot_ptr_->SwitchMode(flexiv::rdk::Mode::NRT_CARTESIAN_MOTION_FORCE);
+
       // Set slave Cartesian stiffness
       translational_stiffness_ = ui_->teleop_translational_stiffness_doubleSpinBox->value();
       rotational_stiffness_ = ui_->teleop_rotational_stiffness_doubleSpinBox->value();
-      std::array<double, flexiv::tdk::kCartDoF> cartesian_stiffness
+      std::array<double, flexiv::rdk::kCartDoF> cartesian_stiffness
           = {translational_stiffness_, translational_stiffness_, translational_stiffness_,
               rotational_stiffness_, rotational_stiffness_, rotational_stiffness_};
       robot_ptr_->SetCartesianImpedance(cartesian_stiffness);
@@ -229,16 +227,17 @@ void MainWindow::update()
       max_contact_force_x_ = ui_->max_tcp_force_x_doubleSpinBox->value();
       max_contact_force_y_ = ui_->max_tcp_force_y_doubleSpinBox->value();
       max_contact_force_z_ = ui_->max_tcp_force_z_doubleSpinBox->value();
-      std::array<double, flexiv::tdk::kCartDoF> max_contact_wrench
+      std::array<double, flexiv::rdk::kCartDoF> max_contact_wrench
           = {max_contact_force_x_, max_contact_force_y_, max_contact_force_y_, 40, 40, 40};
       robot_ptr_->SetMaxContactWrench(max_contact_wrench);
+
+      state_machine_ = SM_TELEOP;
+      spdlog::info("Starting teleoperation");
 
       // Setup thread for teleoperation
       thread_teleoperation_
           = std::make_unique<std::thread>(std::bind(&MainWindow::RunTeleoperation, this));
 
-      state_machine_ = SM_TELEOP;
-      spdlog::info("Starting teleoperation");
       break;
     }
 
@@ -250,7 +249,9 @@ void MainWindow::update()
     }
 
     case SM_TELEOP_EXIT: {
-      device_teleop_ptr_->Stop();
+
+      // Wait for thread to join
+      thread_teleoperation_->join();
 
       // Set operation mode to Idle
       robot_ptr_->SwitchMode(flexiv::rdk::Mode::IDLE);
@@ -348,26 +349,7 @@ void MainWindow::on_connect_rdk_button_clicked()
     spdlog::error("Robot serial is empty");
   }
 
-  try {
-    std::vector<std::string> robots_for_teleoperation;
-    robots_for_teleoperation.push_back(robot_sn);
-    device_teleop_ptr_ = std::make_shared<flexiv::tdk::DeviceTeleopLan>(robots_for_teleoperation);
-
-    device_teleop_ptr_->Init();
-
-    // Get the robot pointer
-    robot_ptr_ = device_teleop_ptr_->instance(0);
-
-    // Initialize teleoperation command
-    teleop_cmd_vector_.clear();
-    teleop_cmd_ = std::make_shared<flexiv::tdk::MotionControlCmds>();
-    teleop_cmd_vector_.push_back(teleop_cmd_);
-
-    ui_->robot_mode_groupBox->setEnabled(true);
-
-  } catch (const std::exception& e) {
-    spdlog::error(e.what());
-  }
+  InitRdkClient();
 }
 
 void MainWindow::on_set_idle_button_clicked()
@@ -425,11 +407,6 @@ void MainWindow::on_set_teleoperation_button_clicked()
     } else {
       spdlog::error("No haptic device available. Unable to run teleoperation");
     }
-    state_machine_ = SM_TELEOP_INIT;
-    ui_->set_idle_button->setEnabled(true);
-    ui_->set_freedrive_button->setEnabled(false);
-    ui_->set_move_home_button->setEnabled(false);
-    ui_->set_teleoperation_button->setEnabled(false);
   }
 }
 
@@ -441,6 +418,70 @@ void MainWindow::InitUI()
   ui_->min_x_offset_doubleSpinBox->setValue(kDefaultTcpOffsetMinX);
   ui_->min_y_offset_doubleSpinBox->setValue(kDefaultTcpOffsetMinY);
   ui_->min_z_offset_doubleSpinBox->setValue(kDefaultTcpOffsetMinZ);
+}
+
+void MainWindow::InitRdkClient()
+{
+  // Start RDK client
+  try {
+    // Instantiate robot interface
+    robot_ptr_ = std::make_shared<flexiv::rdk::Robot>(ui_->robot_sn_lineEdit->text().toStdString());
+
+    // Enable the robot
+    EnableRobot();
+
+  } catch (const std::exception& e) {
+    spdlog::error(e.what());
+  }
+}
+
+void MainWindow::EnableRobot()
+{
+  if (robot_ptr_ != nullptr) {
+    try {
+      // Clear fault on robot server if any
+      if (robot_ptr_->fault()) {
+        spdlog::warn("[RDK warning]: Fault occurred on robot server, trying to clear ...\n");
+        // Try to clear the fault
+        robot_ptr_->ClearFault();
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        // Check again
+        if (robot_ptr_->fault()) {
+          spdlog::error("[RDK error]: Fault cannot be cleared, exiting ...\n");
+          return;
+        }
+        spdlog::info("[RDK info]: Fault on robot server is cleared\n");
+      }
+
+      // Enable robot server
+      robot_ptr_->Enable();
+
+      // Wait for the robot to become operational
+      int seconds_waited = 0;
+      do {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        if (++seconds_waited == 10) {
+          spdlog::error(
+              "[RDK error]: Robot is not operational. Please check that the E-stop is released, "
+              "the robot is in Auto Remote mode and has no fault.\n");
+          break;
+        }
+      } while (!robot_ptr_->operational());
+
+      if (robot_ptr_->operational()) {
+        spdlog::info("[RDK info]: Robot is operational\n");
+      }
+
+    } catch (const std::exception& e) {
+      spdlog::error(e.what());
+    }
+
+    // Set control mode for robot
+    robot_ptr_->SwitchMode(flexiv::rdk::Mode::IDLE);
+    state_machine_ = SM_IDLE;
+
+    ui_->robot_mode_groupBox->setEnabled(true);
+  }
 }
 
 void MainWindow::UpdateRobotStatus(bool flag_connected, bool flag_operational)
@@ -487,6 +528,7 @@ void MainWindow::RunTeleoperation()
     }
     display_force_percentage_ = static_cast<int>(percentage_force_max);
 
+    /*
     // ==================================
     // Haptic device input
     // ==================================
@@ -495,10 +537,11 @@ void MainWindow::RunTeleoperation()
     device_->getRotation(device_pose_.rot);
     device_->getLinearVelocity(device_velocity_.head(k_cartPositionDofs));
     device_->getAngularVelocity(device_velocity_.tail(k_cartOrientationDofs));
+    */
 
     // Filter device velocity
     for (size_t i = 0; i < k_cartPoseDofs; i++) {
-      device_velocity_filtered_[i] = 0.8 * device_velocity_filtered_[i] + 0.2 * device_velocity_[i];
+      device_velocity_filtered_[i] = 0;
     }
 
     auto linear_velocity_filtered = device_velocity_filtered_.head(k_cartPositionDofs);
@@ -539,10 +582,11 @@ void MainWindow::RunTeleoperation()
     // Integrate linear velocity
     // ============================
     // Integrate linear velocity to get new TCP position
-    teleoperation_offset_pose.pos.x()
-        += linear_velocity_filtered(0) * k_loopPeriod * -1.0 * 0.1 * translational_scaling_;
-    teleoperation_offset_pose.pos.y()
-        += linear_velocity_filtered(1) * k_loopPeriod * -1.0 * 0.1 * translational_scaling_;
+    teleoperation_offset_pose.pos.x() += linear_velocity_filtered(0) * k_loopPeriod * -1.0
+                                         * kTranslationalDefaultScalingFactor
+                                         * translational_scaling_;
+    teleoperation_offset_pose.pos.y() += linear_velocity_filtered(1) * k_loopPeriod * -1.0
+                                         * kRotationalDefaultScalingFactor * translational_scaling_;
     teleoperation_offset_pose.pos.z()
         += linear_velocity_filtered(2) * k_loopPeriod * 0.1 * translational_scaling_;
 
@@ -603,25 +647,31 @@ void MainWindow::RunTeleoperation()
     // Send target tcp pose to robot
     // ============================
     // Form pose vector
+    std::array<double, flexiv::rdk::kPoseSize> target_tcp_pose;
     for (size_t i = 0; i < 3; i++) {
-      teleoperation_cmd_pose_[i] = teleoperation_target_pose_.pos[i];
+      target_tcp_pose[i] = teleoperation_target_pose_.pos[i];
     }
-    Eigen::Quaterniond targetQuat(teleoperation_target_pose_.rot);
-    teleoperation_cmd_pose_[3] = targetQuat.w();
-    teleoperation_cmd_pose_[4] = targetQuat.x();
-    teleoperation_cmd_pose_[5] = targetQuat.y();
-    teleoperation_cmd_pose_[6] = targetQuat.z();
+    Eigen::Quaterniond target_quat(teleoperation_target_pose_.rot);
+    target_tcp_pose[3] = target_quat.w();
+    target_tcp_pose[4] = target_quat.x();
+    target_tcp_pose[5] = target_quat.y();
+    target_tcp_pose[6] = target_quat.z();
 
     // ==================================
     // Teleoperation
     // ==================================
-    teleop_cmd_->write(teleoperation_cmd_pose_, teleoperation_cmd_vel_, teleoperation_cmd_acc_);
+    robot_ptr_->SendCartesianMotionForce(
+        target_tcp_pose, {}, {}, m_translationVelLimit, m_rotationVelLimit);
 
+    /*
     device_->setForceAndTorqueAndGripperForce(
         Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(0, 0, 0), 0);
+    */
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
+
+  spdlog::info("Exiting teleoperation");
 }
 
 } /* namespace teleoperation */

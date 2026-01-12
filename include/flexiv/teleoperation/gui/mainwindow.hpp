@@ -13,8 +13,8 @@
 #include <QTimer>
 #include <spdlog/spdlog.h>
 
-#include <flexiv/tdk/data.hpp>
-#include <flexiv/tdk/device_teleop_lan.hpp>
+#include <flexiv/rdk/data.hpp>
+#include <flexiv/rdk/robot.hpp>
 
 #include "flexiv/teleoperation/data_types.hpp"
 #include <flexiv/teleoperation/devices/HapticDeviceHandler.hpp>
@@ -100,23 +100,11 @@ private:
   Vec6d device_velocity_filtered_ = Vec6d::Zero();
 
   // ========================= Teleoperation =======================
-  // Teleoperation handler
-  std::shared_ptr<flexiv::tdk::DeviceTeleopLan> device_teleop_ptr_;
-
-  // Teleoperation command ptr
-  std::vector<std::shared_ptr<flexiv::tdk::MotionControlCmds>> teleop_cmd_vector_;
-  std::shared_ptr<flexiv::tdk::MotionControlCmds> teleop_cmd_;
-
   // Robot pointer
   std::shared_ptr<flexiv::rdk::Robot> robot_ptr_ = nullptr;
 
   // State machine for robot
   StateMachine state_machine_ = SM_DISCONNECT;
-
-  // Teleoperation commands
-  std::array<double, flexiv::tdk::kPoseSize> teleoperation_cmd_pose_;
-  std::array<double, flexiv::tdk::kCartDoF> teleoperation_cmd_vel_;
-  std::array<double, flexiv::tdk::kCartDoF> teleoperation_cmd_acc_;
 
   // Teleoperation target TCP pose
   Pose teleoperation_target_pose_;
@@ -144,6 +132,10 @@ private:
   double translational_scaling_ = 1.0;
   double rotational_scaling_ = 1.0;
 
+  // Translation and rotational velocity limit
+  double m_translationVelLimit = 0.5;
+  double m_rotationVelLimit = 0.6;
+
   // Display forces information
   int display_force_percentage_ = 0;
   double display_force_norm_ = 0;
@@ -152,6 +144,10 @@ private:
   std::unique_ptr<std::thread> thread_teleoperation_;
 
   void InitUI();
+
+  void InitRdkClient();
+
+  void EnableRobot();
 
   void UpdateRobotStatus(bool flag_connected, bool flag_operational);
 

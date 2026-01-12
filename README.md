@@ -19,3 +19,6 @@
 5. Run the application
 
         ./flexiv_teleoperation_app
+
+## Build and install spacemouse drivers
+Please follow the instructions in README_Spacemouse.txt to install the spacemouse drivers. 

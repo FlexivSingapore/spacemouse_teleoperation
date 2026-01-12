@@ -480,7 +480,12 @@ void MainWindow::EnableRobot()
     robot_ptr_->SwitchMode(flexiv::rdk::Mode::IDLE);
     state_machine_ = SM_IDLE;
 
+    // Set the UI
     ui_->robot_mode_groupBox->setEnabled(true);
+    ui_->set_idle_button->setEnabled(false);
+    ui_->set_freedrive_button->setEnabled(true);
+    ui_->set_move_home_button->setEnabled(true);
+    ui_->set_teleoperation_button->setEnabled(true);
   }
 }
 

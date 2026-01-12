@@ -32,7 +32,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 # Find flexiv_rdk INTERFACE library
-find_package(flexiv_rdk REQUIRED)
+find_package(flexiv_rdk 1.8.0 EXACT REQUIRED)
 
 # ==================================================================================================
 #      CREATE EXECUTABLE

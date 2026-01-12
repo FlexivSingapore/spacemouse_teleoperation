@@ -1,8 +1,7 @@
 # Teleoperation of Flexiv Robots using Spacemouse
 
-
 ## Build and install depenencies
-1. Please install flexiv_rdk via https://github.com/flexivrobotics/flexiv_rdk. Follow the README.md in flexiv_rdk to install the flexiv rdk library. Please checkout version v0.10 of the flexiv_rdk.
+1. Please install flexiv_rdk via https://github.com/flexivrobotics/flexiv_rdk. Follow the README.md in flexiv_rdk to install the flexiv rdk library. Please checkout version v1.8 of the flexiv_rdk.
 
 
 2. In the current repository, create a build folder
@@ -11,11 +10,11 @@
 
 3. Configure cmake via
 
-        cmake .. -DCMAKE_INSTALL_PREFIX=~/rdk_install
+        cmake .. -DCMAKE_PREFIX_PATH=~/rdk_install
 
 4. Build the application
 
-        make -j 3
+        make -j 5
 
 5. Run the application
 

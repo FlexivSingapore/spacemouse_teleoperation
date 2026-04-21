@@ -292,6 +292,13 @@ QTreeView{
                </widget>
               </item>
               <item>
+               <widget class="QPushButton" name="set_move_pose_1_button">
+                <property name="text">
+                 <string>Move To Pose 1</string>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="QPushButton" name="set_teleoperation_button">
                 <property name="enabled">
                  <bool>true</bool>
@@ -393,9 +400,22 @@ QTreeView{
              </property>
              <widget class="QWidget" name="tab_6">
               <attribute name="title">
-               <string>Home</string>
+               <string>Pre-set plan</string>
               </attribute>
               <layout class="QGridLayout" name="gridLayout_5">
+               <item row="2" column="0">
+                <spacer name="verticalSpacer_8">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
                <item row="0" column="0">
                 <widget class="QLabel" name="label_2">
                  <property name="text">
@@ -411,17 +431,18 @@ QTreeView{
                 </widget>
                </item>
                <item row="1" column="0">
-                <spacer name="verticalSpacer_8">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                <widget class="QLabel" name="label_35">
+                 <property name="text">
+                  <string>Pose 1 plan name</string>
                  </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="pose1_plan_name_lineEdit">
+                 <property name="text">
+                  <string>MovePose1</string>
                  </property>
-                </spacer>
+                </widget>
                </item>
               </layout>
              </widget>
@@ -1059,11 +1080,33 @@ QTreeView{
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <tabstops>
+  <tabstop>tabWidget_2</tabstop>
   <tabstop>robot_sn_lineEdit</tabstop>
   <tabstop>connect_rdk_button</tabstop>
   <tabstop>set_idle_button</tabstop>
   <tabstop>set_freedrive_button</tabstop>
+  <tabstop>set_move_home_button</tabstop>
   <tabstop>set_teleoperation_button</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>home_plan_name_lineEdit</tabstop>
+  <tabstop>pose1_plan_name_lineEdit</tabstop>
+  <tabstop>teleop_translational_stiffness_doubleSpinBox</tabstop>
+  <tabstop>teleop_rotational_stiffness_doubleSpinBox</tabstop>
+  <tabstop>workspace_tabWidget</tabstop>
+  <tabstop>max_x_offset_doubleSpinBox</tabstop>
+  <tabstop>min_x_offset_doubleSpinBox</tabstop>
+  <tabstop>max_y_offset_doubleSpinBox</tabstop>
+  <tabstop>min_y_offset_doubleSpinBox</tabstop>
+  <tabstop>max_z_offset_doubleSpinBox</tabstop>
+  <tabstop>min_z_offset_doubleSpinBox</tabstop>
+  <tabstop>maxRotXOffset_doubleSpinBox</tabstop>
+  <tabstop>max_tcp_force_x_doubleSpinBox</tabstop>
+  <tabstop>max_tcp_force_y_doubleSpinBox</tabstop>
+  <tabstop>max_tcp_force_z_doubleSpinBox</tabstop>
+  <tabstop>motion_translation_scale_doubleSpinBox</tabstop>
+  <tabstop>motion_rotation_scale_doubleSpinBox</tabstop>
+  <tabstop>motionTranslationLimit_doubleSpinBox</tabstop>
+  <tabstop>motionRotationLimit_doubleSpinBox</tabstop>
  </tabstops>
  <resources/>
  <connections/>

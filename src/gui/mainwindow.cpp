@@ -260,7 +260,7 @@ void MainWindow::update()
       break;
     }
 
-    case SM_MOVEPOSE_INIT: {
+    case SM_MOVEHOME_INIT: {
       // Set operation mode to plan execution mode
       robot_ptr_->SwitchMode(flexiv::rdk::Mode::NRT_PLAN_EXECUTION);
 
@@ -271,22 +271,60 @@ void MainWindow::update()
         spdlog::error(e.what());
       }
 
+      state_machine_ = SM_MOVEHOME_RUNPLAN_WAITFORFINISH;
+      break;
+    }
+
+    case SM_MOVEHOME_RUNPLAN_WAITFORFINISH: {
+      if (!robot_ptr_->busy()) {
+        state_machine_ = SM_MOVEHOME_EXIT;
+      }
+      break;
+    }
+
+    case SM_MOVEHOME_EXIT: {
+
+      ui_->set_idle_button->setEnabled(false);
+      ui_->set_freedrive_button->setEnabled(true);
+      ui_->set_move_home_button->setEnabled(true);
+      ui_->set_move_pose_1_button->setEnabled(true);
+      ui_->set_teleoperation_button->setEnabled(true);
+
+      // Set operation mode to Idle
+      robot_ptr_->SwitchMode(flexiv::rdk::Mode::IDLE);
+      state_machine_ = SM_IDLE;
+      break;
+    }
+
+    case SM_MOVEPOSE_INIT: {
+       // Set operation mode to plan execution mode
+      robot_ptr_->SwitchMode(flexiv::rdk::Mode::NRT_PLAN_EXECUTION);
+
+      // Robot run free drive
+      try {
+        robot_ptr_->ExecutePlan(ui_->set_move_pose_1_button->text().toStdString());
+      } catch (const std::exception& e) {
+        spdlog::error(e.what());
+      }
+
       state_machine_ = SM_MOVEPOSE_RUNPLAN_WAITFORFINISH;
       break;
     }
 
-    case SM_MOVEPOSE_RUNPLAN_WAITFORFINISH: {
+    case SM_MOVEPOSE_RUNPLAN_WAITFORFINISH:
+    {
       if (!robot_ptr_->busy()) {
         state_machine_ = SM_MOVEPOSE_EXIT;
       }
       break;
     }
 
-    case SM_MOVEPOSE_EXIT: {
-
+    case SM_MOVEPOSE_EXIT:
+    {
       ui_->set_idle_button->setEnabled(false);
       ui_->set_freedrive_button->setEnabled(true);
       ui_->set_move_home_button->setEnabled(true);
+      ui_->set_move_pose_1_button->setEnabled(true);
       ui_->set_teleoperation_button->setEnabled(true);
 
       // Set operation mode to Idle
@@ -360,6 +398,7 @@ void MainWindow::on_set_idle_button_clicked()
     ui_->set_idle_button->setEnabled(false);
     ui_->set_freedrive_button->setEnabled(true);
     ui_->set_move_home_button->setEnabled(true);
+    ui_->set_move_pose_1_button->setEnabled(true);
     ui_->set_teleoperation_button->setEnabled(true);
   } else if (state_machine_ == SM_TELEOP) {
     state_machine_ = SM_TELEOP_EXIT;
@@ -367,6 +406,7 @@ void MainWindow::on_set_idle_button_clicked()
     ui_->set_idle_button->setEnabled(false);
     ui_->set_freedrive_button->setEnabled(true);
     ui_->set_move_home_button->setEnabled(true);
+    ui_->set_move_pose_1_button->setEnabled(true);
     ui_->set_teleoperation_button->setEnabled(true);
   }
 }
@@ -374,11 +414,25 @@ void MainWindow::on_set_idle_button_clicked()
 void MainWindow::on_set_move_home_button_clicked()
 {
   if (state_machine_ == SM_IDLE) {
+    state_machine_ = SM_MOVEHOME_INIT;
+
+    ui_->set_idle_button->setEnabled(false);
+    ui_->set_freedrive_button->setEnabled(false);
+    ui_->set_move_home_button->setEnabled(false);
+    ui_->set_move_pose_1_button->setEnabled(false);
+    ui_->set_teleoperation_button->setEnabled(false);
+  }
+}
+
+void MainWindow::on_set_move_pose_1_button_clicked()
+{
+  if (state_machine_ == SM_IDLE) {
     state_machine_ = SM_MOVEPOSE_INIT;
 
     ui_->set_idle_button->setEnabled(false);
     ui_->set_freedrive_button->setEnabled(false);
     ui_->set_move_home_button->setEnabled(false);
+    ui_->set_move_pose_1_button->setEnabled(false);
     ui_->set_teleoperation_button->setEnabled(false);
   }
 }
@@ -391,6 +445,7 @@ void MainWindow::on_set_freedrive_button_clicked()
     ui_->set_idle_button->setEnabled(true);
     ui_->set_freedrive_button->setEnabled(false);
     ui_->set_move_home_button->setEnabled(false);
+    ui_->set_move_pose_1_button->setEnabled(false);
     ui_->set_teleoperation_button->setEnabled(false);
   }
 }
@@ -403,6 +458,7 @@ void MainWindow::on_set_teleoperation_button_clicked()
       ui_->set_idle_button->setEnabled(true);
       ui_->set_freedrive_button->setEnabled(false);
       ui_->set_move_home_button->setEnabled(false);
+      ui_->set_move_pose_1_button->setEnabled(false);
       ui_->set_teleoperation_button->setEnabled(false);
     } else {
       spdlog::error("No haptic device available. Unable to run teleoperation");

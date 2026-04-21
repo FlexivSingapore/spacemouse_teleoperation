@@ -48,9 +48,13 @@ enum StateMachine
   SM_TELEOP,
   SM_TELEOP_EXIT,
 
+  SM_MOVEHOME_INIT,
+  SM_MOVEHOME_RUNPLAN_WAITFORFINISH,
+  SM_MOVEHOME_EXIT,
+
   SM_MOVEPOSE_INIT,
   SM_MOVEPOSE_RUNPLAN_WAITFORFINISH,
-  SM_MOVEPOSE_EXIT
+  SM_MOVEPOSE_EXIT,
 };
 
 class MainWindow : public QMainWindow
@@ -67,6 +71,7 @@ private slots:
   void on_connect_rdk_button_clicked();
   void on_set_idle_button_clicked();
   void on_set_move_home_button_clicked();
+  void on_set_move_pose_1_button_clicked();
   void on_set_freedrive_button_clicked();
   void on_set_teleoperation_button_clicked();
 

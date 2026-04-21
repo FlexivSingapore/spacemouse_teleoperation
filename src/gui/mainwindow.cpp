@@ -302,7 +302,7 @@ void MainWindow::update()
 
       // Robot run free drive
       try {
-        robot_ptr_->ExecutePlan(ui_->set_move_pose_1_button->text().toStdString());
+        robot_ptr_->ExecutePlan(ui_->pose1_plan_name_lineEdit->text().toStdString());
       } catch (const std::exception& e) {
         spdlog::error(e.what());
       }
@@ -541,6 +541,7 @@ void MainWindow::EnableRobot()
     ui_->set_idle_button->setEnabled(false);
     ui_->set_freedrive_button->setEnabled(true);
     ui_->set_move_home_button->setEnabled(true);
+    ui_->set_move_pose_1_button->setEnabled(true);
     ui_->set_teleoperation_button->setEnabled(true);
   }
 }
